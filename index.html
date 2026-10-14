@@ -1,0 +1,758 @@
+ <!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>NEKROS AWAKENING</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    color: #00ff9d;
+    cursor: crosshair;
+  }
+
+  #particles {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 157, 0.03) 0px,
+      rgba(0, 255, 157, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+    z-index: 10;
+    animation: scanmove 8s linear infinite;
+  }
+  @keyframes scanmove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+  }
+
+  .vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.9) 100%);
+    pointer-events: none;
+    z-index: 9;
+  }
+
+  /* ===== ПРИВЕТСТВЕННЫЙ ЭКРАН ===== */
+  #intro {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.6s ease;
+  }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  
+  #intro .intro-skull {
+    width: 140px;
+    height: 140px;
+    filter: drop-shadow(0 0 25px #00ff9d);
+    animation: introPulse 2s ease-in-out infinite;
+  }
+  @keyframes introPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 25px #00ff9d); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 50px #00ffea); }
+  }
+  
+  #intro .intro-brand {
+    margin-top: 28px;
+    font-size: 16px;
+    letter-spacing: 12px;
+    color: #00ffea;
+    text-shadow: 0 0 15px #00ffea;
+    font-weight: bold;
+  }
+
+  #intro .intro-text {
+    margin-top: 30px;
+    font-size: 14px;
+    letter-spacing: 8px;
+    color: #00ff9d;
+    text-shadow: 0 0 12px #00ff9d;
+    animation: blink 1.4s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  #intro .intro-sub {
+    margin-top: 18px;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #00ff9d;
+    opacity: 0.45;
+  }
+
+  /* ===== ЦЕНТР ===== */
+  .center {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+
+  .skull-wrap {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px #00ff9d); }
+    50% { transform: scale(1.03); filter: drop-shadow(0 0 40px #00ff9d); }
+  }
+
+  .skull-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px #00ff9d);
+  }
+
+  .glitch-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .glitch-layer svg { width: 100%; height: 100%; }
+  .glitch-1 { animation: glitch1 2.5s infinite; mix-blend-mode: screen; }
+  .glitch-2 { animation: glitch2 3.7s infinite; mix-blend-mode: screen; }
+  @keyframes glitch1 {
+    0%, 90%, 100% { transform: translate(0); opacity: 0; }
+    92% { transform: translate(-6px, 2px); opacity: 1; filter: hue-rotate(180deg); }
+    94% { transform: translate(4px, -3px); opacity: 1; }
+    96% { transform: translate(-2px, 1px); opacity: 1; }
+  }
+  @keyframes glitch2 {
+    0%, 85%, 100% { transform: translate(0); opacity: 0; }
+    88% { transform: translate(5px, -2px); opacity: 1; filter: hue-rotate(-90deg); }
+    91% { transform: translate(-3px, 4px); opacity: 1; }
+    93% { transform: translate(2px, -1px); opacity: 1; }
+  }
+
+  .brand {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: 8px;
+    color: #00ffea;
+    opacity: 0.75;
+    white-space: nowrap;
+    text-shadow: 0 0 10px #00ffea;
+    font-weight: bold;
+  }
+  .brand small {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: #00ff9d;
+    opacity: 0.55;
+    margin-top: 4px;
+    font-weight: normal;
+  }
+
+  .title {
+    margin-top: 50px;
+    font-size: 14px;
+    letter-spacing: 8px;
+    color: #00ff9d;
+    text-shadow: 0 0 10px #00ff9d;
+    animation: flicker 4s infinite;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    45% { opacity: 0.6; }
+    47% { opacity: 1; }
+    60% { opacity: 0.3; }
+    62% { opacity: 1; }
+  }
+
+  /* ===== СУБТИТРЫ ===== */
+  #subtitle {
+    position: fixed;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 80vw;
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: #00ffea;
+    text-shadow: 0 0 12px #00ffea, 0 0 30px #00ff9d;
+    z-index: 8;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    padding: 12px 24px;
+    border: 1px solid rgba(0, 255, 157, 0.25);
+    background: rgba(0, 20, 10, 0.35);
+    backdrop-filter: blur(2px);
+  }
+  #subtitle.show { opacity: 1; }
+  #subtitle .word {
+    display: inline-block;
+    margin: 0 4px;
+    transition: color 0.15s ease, text-shadow 0.15s ease;
+  }
+  #subtitle .word.active {
+    color: #fff;
+    text-shadow: 0 0 15px #00ffea, 0 0 30px #00ffea;
+  }
+  #subtitle .word.glitch {
+    animation: wordGlitch 0.15s steps(2);
+  }
+  @keyframes wordGlitch {
+    0% { transform: translate(0); }
+    50% { transform: translate(-2px, 1px); }
+    100% { transform: translate(2px, -1px); }
+  }
+
+  .progress-wrap {
+    margin-top: 30px;
+    width: 420px;
+    max-width: 80vw;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+  .bar {
+    height: 4px;
+    background: rgba(0, 255, 157, 0.15);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 157, 0.3);
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff9d, #00ffea);
+    width: 0%;
+    box-shadow: 0 0 15px #00ff9d;
+    transition: width 0.3s ease;
+    position: relative;
+  }
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shine 1.2s linear infinite;
+  }
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .logs {
+    margin-top: 30px;
+    width: 420px;
+    max-width: 80vw;
+    height: 100px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    opacity: 0.75;
+    overflow: hidden;
+    line-height: 1.7;
+  }
+  .logs div { animation: fadein 0.3s ease; }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .log-ok { color: #00ff9d; }
+  .log-warn { color: #ffcc00; }
+  .log-err { color: #ff3355; }
+
+  .hud {
+    position: fixed;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #00ff9d;
+    opacity: 0.6;
+    z-index: 6;
+  }
+  .hud-tl { top: 20px; left: 20px; }
+  .hud-tr { top: 20px; right: 20px; text-align: right; }
+  .hud-bl { bottom: 20px; left: 20px; }
+  .hud-br { bottom: 20px; right: 20px; text-align: right; }
+
+  .hud .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #ff3355;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: blinkDot 1s infinite;
+    box-shadow: 0 0 8px #ff3355;
+  }
+  @keyframes blinkDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .done {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .done.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .done h1 {
+    font-size: 42px;
+    letter-spacing: 10px;
+    color: #00ff9d;
+    text-shadow: 0 0 30px #00ff9d, 0 0 60px #00ff9d;
+    animation: pulse2 2s infinite;
+    text-align: center;
+  }
+  @keyframes pulse2 {
+    0%, 100% { text-shadow: 0 0 30px #00ff9d, 0 0 60px #00ff9d; }
+    50% { text-shadow: 0 0 50px #00ffea, 0 0 100px #00ffea; }
+  }
+  .done p {
+    margin-top: 20px;
+    font-size: 12px;
+    letter-spacing: 6px;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<!-- Экран входа -->
+<div id="intro">
+  <svg class="intro-skull" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 15 C55 15 25 50 25 95 C25 125 35 140 45 148 L45 175 C45 185 55 190 65 190 L75 190 L75 170 L125 170 L125 190 L135 190 C145 190 155 185 155 175 L155 148 C165 140 175 125 175 95 C175 50 145 15 100 15 Z M70 95 A15 15 0 1 1 70 94.9 Z M130 95 A15 15 0 1 1 130 94.9 Z M100 115 L92 138 L108 138 Z" fill="#00ff9d"/>
+  </svg>
+  <div class="intro-brand">NEKROS AWAKENING</div>
+  <div class="intro-text">[ TAP TO INITIATE ]</div>
+  <div class="intro-sub">VOICE SYNTH READY // AWAITING OPERATOR</div>
+</div>
+
+<canvas id="particles"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="hud hud-tl">NEKROS.AWAKENING // <span id="clock">00:00:00</span></div>
+<div class="hud hud-tr"><span class="dot"></span>SYNC // LIVE</div>
+<div class="hud hud-bl">NODE: 0xDEAD<br>CIPHER: X-CHAOS-512</div>
+<div class="hud hud-br">BUILD 6.6.6<br>NEKROS//AWAKENING</div>
+
+<div class="center">
+  <div class="skull-wrap">
+    <div class="brand">NEKROS AWAKENING<small>// AWAITING AWAKENING //</small></div>
+
+    <div class="glitch-layer glitch-1">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 15 C55 15 25 50 25 95 C25 125 35 140 45 148 L45 175 C45 185 55 190 65 190 L75 190 L75 170 L125 170 L125 190 L135 190 C145 190 155 185 155 175 L155 148 C165 140 175 125 175 95 C175 50 145 15 100 15 Z M70 95 A15 15 0 1 1 70 94.9 Z M130 95 A15 15 0 1 1 130 94.9 Z M100 115 L92 138 L108 138 Z" fill="#ff00aa"/>
+      </svg>
+    </div>
+    <div class="glitch-layer glitch-2">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 15 C55 15 25 50 25 95 C25 125 35 140 45 148 L45 175 C45 185 55 190 65 190 L75 190 L75 170 L125 170 L125 190 L135 190 C145 190 155 185 155 175 L155 148 C165 140 175 125 175 95 C175 50 145 15 100 15 Z M70 95 A15 15 0 1 1 70 94.9 Z M130 95 A15 15 0 1 1 130 94.9 Z M100 115 L92 138 L108 138 Z" fill="#00aaff"/>
+      </svg>
+    </div>
+
+    <svg class="skull-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="skullGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#00ffea"/>
+          <stop offset="100%" stop-color="#00ff9d"/>
+        </linearGradient>
+      </defs>
+      <path d="M100 15 C55 15 25 50 25 95 C25 125 35 140 45 148 L45 175 C45 185 55 190 65 190 L75 190 L75 170 L125 170 L125 190 L135 190 C145 190 155 185 155 175 L155 148 C165 140 175 125 175 95 C175 50 145 15 100 15 Z M70 95 A15 15 0 1 1 70 94.9 Z M130 95 A15 15 0 1 1 130 94.9 Z M100 115 L92 138 L108 138 Z" 
+            fill="url(#skullGrad)" opacity="0.9"/>
+      <g stroke="#000" stroke-width="1" opacity="0.4">
+        <line x1="40" y1="60" x2="60" y2="60"/>
+        <line x1="40" y1="65" x2="55" y2="65"/>
+        <line x1="140" y1="60" x2="160" y2="60"/>
+        <line x1="145" y1="65" x2="160" y2="65"/>
+        <line x1="85" y1="155" x2="115" y2="155"/>
+        <line x1="85" y1="160" x2="110" y2="160"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="title" id="title">AWAKENING // NEKROS</div>
+
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="task">SUMMONING CORE...</span>
+      <span id="percent">0%</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+  </div>
+
+  <div class="logs" id="logs"></div>
+</div>
+
+<!-- Субтитры -->
+<div id="subtitle"></div>
+
+<div class="done" id="done">
+  <h1>NEKROS AWAKENED</h1>
+  <p>THE DEAD DON'T STAY DEAD</p>
+</div>
+
+<script>
+/* ============================================================
+   1. ЧАСТИЦЫ / КОД-ДОЖДЬ
+   ============================================================ */
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, columns, drops;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  columns = Math.floor(W / 16);
+  drops = Array(columns).fill(1).map(() => Math.random() * H);
+}
+resize();
+window.addEventListener('resize', resize);
+
+const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEF#$%&*<>/\\';
+function drawRain() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.font = '14px monospace';
+  for (let i = 0; i < drops.length; i++) {
+    const c = chars[Math.floor(Math.random() * chars.length)];
+    const x = i * 16;
+    const y = drops[i];
+    ctx.fillStyle = Math.random() > 0.95 ? '#00ffea' : '#00ff9d';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#00ff9d';
+    ctx.fillText(c, x, y);
+    ctx.shadowBlur = 0;
+    if (y > H && Math.random() > 0.975) drops[i] = 0;
+    drops[i] += 16;
+  }
+}
+setInterval(drawRain, 50);
+
+/* ============================================================
+   2. ЧАСЫ
+   ============================================================ */
+setInterval(() => {
+  const d = new Date();
+  const t = [d.getHours(), d.getMinutes(), d.getSeconds()]
+    .map(n => String(n).padStart(2, '0')).join(':');
+  document.getElementById('clock').textContent = t;
+}, 1000);
+
+/* ============================================================
+   3. ЗВУК
+   ============================================================ */
+let audioCtx = null;
+
+function startAmbient() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AC();
+
+  const hum = audioCtx.createOscillator();
+  hum.type = 'sawtooth';
+  hum.frequency.value = 55;
+  const humFilter = audioCtx.createBiquadFilter();
+  humFilter.type = 'lowpass';
+  humFilter.frequency.value = 180;
+  const humGain = audioCtx.createGain();
+  humGain.gain.value = 0.05;
+  hum.connect(humFilter).connect(humGain).connect(audioCtx.destination);
+  hum.start();
+
+  const hum2 = audioCtx.createOscillator();
+  hum2.type = 'sawtooth';
+  hum2.frequency.value = 55 * 1.008;
+  const humGain2 = audioCtx.createGain();
+  humGain2.gain.value = 0.03;
+  hum2.connect(humFilter).connect(humGain2).connect(audioCtx.destination);
+  hum2.start();
+
+  const noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = 3500;
+  noiseFilter.Q.value = 0.8;
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.018;
+  noise.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
+  noise.start();
+
+  setInterval(() => {
+    if (Math.random() > 0.55) {
+      const g = audioCtx.createGain();
+      const now = audioCtx.currentTime;
+      g.gain.setValueAtTime(0.05, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      const o = audioCtx.createOscillator();
+      o.type = Math.random() > 0.5 ? 'square' : 'sawtooth';
+      o.frequency.value = 150 + Math.random() * 3500;
+      o.connect(g).connect(audioCtx.destination);
+      o.start(now);
+      o.stop(now + 0.1);
+    }
+  }, 350);
+}
+
+function glitchBeep() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.06, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+  const o = audioCtx.createOscillator();
+  o.type = 'square';
+  o.frequency.setValueAtTime(800 + Math.random() * 1800, now);
+  o.frequency.exponentialRampToValueAtTime(300 + Math.random() * 600, now + 0.06);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(now);
+  o.stop(now + 0.08);
+}
+
+/* ============================================================
+   4. ГЛИТЧ-ГОЛОС
+   ============================================================ */
+const GREETING = "Вас приветствует владелец этого сайта. Вы находитесь в безопасности. Вас никто не видит. Никто не слышит. Вы на сайте NEKROS AWAKENING. Добро пожаловать!";
+
+const subtitleEl = document.getElementById('subtitle');
+
+let ruVoice = null;
+function pickVoice() {
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+  ruVoice = voices.find(v => /ru/i.test(v.lang) && /male|yuri|pavel|dmitri|maxim/i.test(v.name))
+         || voices.find(v => /ru/i.test(v.lang))
+         || voices[0];
+}
+speechSynthesis.onvoiceschanged = pickVoice;
+pickVoice();
+
+function renderSubtitle(words) {
+  subtitleEl.innerHTML = words.map((w, i) =>
+    `<span class="word" data-i="${i}">${w}</span>`
+  ).join('');
+  subtitleEl.classList.add('show');
+}
+
+function highlightWord(i, glitch = false) {
+  const words = subtitleEl.querySelectorAll('.word');
+  words.forEach(w => w.classList.remove('active', 'glitch'));
+  if (words[i]) {
+    words[i].classList.add('active');
+    if (glitch) words[i].classList.add('glitch');
+  }
+}
+
+function speakGlitchy(text, onDone) {
+  const words = text.split(/\s+/).filter(Boolean);
+  renderSubtitle(words);
+
+  let i = 0;
+  function next() {
+    if (i >= words.length) {
+      setTimeout(() => {
+        subtitleEl.classList.remove('show');
+        onDone && onDone();
+      }, 800);
+      return;
+    }
+
+    const word = words[i];
+    const idx = i;
+    i++;
+
+    const clean = word.replace(/[.,!?;:—]/g, '');
+
+    const u = new SpeechSynthesisUtterance(clean || word);
+    u.lang = 'ru-RU';
+    if (ruVoice) u.voice = ruVoice;
+
+    u.pitch = 0.35 + Math.random() * 0.5;
+    u.rate  = 0.75 + Math.random() * 0.35;
+    u.volume = 0.95;
+
+    const isGlitchWord = Math.random() > 0.82;
+
+    highlightWord(idx, isGlitchWord);
+    if (isGlitchWord) glitchBeep();
+
+    u.onend = () => {
+      if (isGlitchWord) {
+        const u2 = new SpeechSynthesisUtterance(clean || word);
+        u2.lang = 'ru-RU';
+        if (ruVoice) u2.voice = ruVoice;
+        u2.pitch = 0.2;
+        u2.rate = 1.3;
+        u2.volume = 0.7;
+        u2.onend = () => setTimeout(next, 40 + Math.random() * 80);
+        speechSynthesis.speak(u2);
+      } else {
+        setTimeout(next, 30 + Math.random() * 70);
+      }
+    };
+    u.onerror = () => setTimeout(next, 60);
+
+    speechSynthesis.speak(u);
+  }
+  next();
+}
+
+/* ============================================================
+   5. ЛОГИ И ПРОГРЕСС
+   ============================================================ */
+const logMessages = [
+  ['> uplink to NEKROS AWAKENING 0xDEAD...', 'ok'],
+  ['> necrotic handshake OK', 'ok'],
+  ['> raising bone protocol...', 'warn'],
+  ['> SIGNAL LOST // reanimating', 'err'],
+  ['> draining ghost cache', 'ok'],
+  ['> reconstructing neural mesh', 'ok'],
+  ['> decrypting ossuary archive [6.6GB]', 'warn'],
+  ['> summoning daemon process', 'ok'],
+  ['> binding spirit to socket', 'ok'],
+  ['> ANOMALY at sector 0xFFF', 'err'],
+  ['> soul patch applied', 'ok'],
+  ['> syncing with shadow ledger', 'ok'],
+  ['> operator signature verified', 'ok'],
+  ['> opening the black channel', 'ok'],
+  ['> NEKROS AWAKENING IN PROGRESS...', 'warn'],
+];
+
+const taskNames = [
+  'SUMMONING CORE...',
+  'RAISING BONES...',
+  'DECRYPTING OSSUARY...',
+  'BINDING SPIRITS...',
+  'INJECTING SOUL...',
+  'SYNCHRONIZING SHADOWS...',
+  'AWAKENING NEKROS...',
+  'FINALIZING RITUAL...',
+];
+
+const logsEl = document.getElementById('logs');
+const barFill = document.getElementById('barFill');
+const percentEl = document.getElementById('percent');
+const taskEl = document.getElementById('task');
+const titleEl = document.getElementById('title');
+
+const glitchTitles = [
+  'AWAKENING // NEKROS',
+  'A̸W̸A̸K̸E̸N̸I̸N̸G̸ // NEKROS',
+  'AWAKENING // NEK̷R̷O̷S̷',
+  'AWAKENING // N̸E̸K̸R̸O̸S̸',
+];
+setInterval(() => {
+  if (Math.random() > 0.7) {
+    titleEl.textContent = glitchTitles[Math.floor(Math.random() * glitchTitles.length)];
+    setTimeout(() => titleEl.textContent = glitchTitles[0], 120);
+  }
+}, 1800);
+
+let progress = 0;
+let logIdx = 0;
+let loadingStarted = false;
+
+function addLog() {
+  const [msg, type] = logMessages[logIdx % logMessages.length];
+  const div = document.createElement('div');
+  div.className = 'log-' + type;
+  div.textContent = msg;
+  logsEl.appendChild(div);
+  if (logsEl.children.length > 6) logsEl.removeChild(logsEl.firstChild);
+  logIdx++;
+}
+
+function tick() {
+  const step = Math.random() * 7 + 2;
+  progress = Math.min(progress + step, 100);
+  barFill.style.width = progress + '%';
+  percentEl.textContent = Math.floor(progress) + '%';
+
+  const tIdx = Math.min(Math.floor(progress / 100 * taskNames.length), taskNames.length - 1);
+  taskEl.textContent = taskNames[tIdx];
+
+  if (Math.random() > 0.5) addLog();
+
+  if (progress >= 100) {
+    setTimeout(() => {
+      document.getElementById('done').classList.add('show');
+      setTimeout(() => location.reload(), 5000);
+    }, 600);
+    return;
+  }
+  setTimeout(tick, 200 + Math.random() * 350);
+}
+
+function startLoading() {
+  if (loadingStarted) return;
+  loadingStarted = true;
+  setTimeout(tick, 400);
+}
+
+/* ============================================================
+   6. СТАРТ
+   ============================================================ */
+document.getElementById('intro').addEventListener('click', () => {
+  document.getElementById('intro').classList.add('hide');
+
+  try { startAmbient(); } catch(e) {}
+
+  setTimeout(() => {
+    speakGlitchy(GREETING, () => {
+      startLoading();
+    });
+  }, 400);
+});
+</script>
+</body>
+</html>
